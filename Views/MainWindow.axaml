@@ -19,19 +19,18 @@
         <TextBlock Text="L4D2 Conflict Manager" HorizontalAlignment="Center" FontWeight="Bold"/>
         
         <Button Content="Set Game Directory"
-                Command="{Binding CheckForConflictsCommand}"
+                Command="{Binding SetGameDirectoryCommand}"
                 HorizontalAlignment="Center"/>        
         
         <TextBlock Text="{Binding GameDirectory}" HorizontalAlignment="Center"/>    
         
-        <Separator/>     
+        <Separator/>
         
-        <Button Content="Scan VPK Files"
-                Command="{Binding TestingVpkCommand}"
+        <Button Content="Check for Conflicts"
+                Command="{Binding CheckForConflictsCommand}"
                 HorizontalAlignment="Center"/>
         
-        <TextBlock Text="Files Found:"/>
-        
-        <ListBox ItemsSource="{Binding FileList}"/>
+        <TextBlock Text="Conflicts Found:"/>
+        <ListBox ItemsSource="{Binding ConflictList}"/>
     </StackPanel>
 </Window>

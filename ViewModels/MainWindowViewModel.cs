@@ -1,9 +1,8 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Threading.Tasks;
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -16,9 +15,9 @@ public partial class MainWindowViewModel : ViewModelBase
 {
     [ObservableProperty]
     private string _gameDirectory = "N/A";
-    
+
     [ObservableProperty]
-    private ObservableCollection<string> _fileList = new();
+    private ObservableCollection<string> _conflictList = new();
 
     public MainWindowViewModel()
     {
@@ -34,15 +33,16 @@ public partial class MainWindowViewModel : ViewModelBase
         }        
     }
 
-    private async Task GetGameDirectory()
+    [RelayCommand]
+    private async Task SetGameDirectory()
     {
         if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var directoryFolders = await desktop.MainWindow.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
-                Title = "Please select your Left 4 Dead 2 Game Folder",
+                Title = "Please select your Left 4 Dead 2 addons folder (Stored in Left 4 Dead 2/left4dead2)",
                 AllowMultiple = false,
-                SuggestedFileName = "workshop"
+                SuggestedFileName = "addons"
             });
 
             if (directoryFolders.Count != 0)
@@ -53,32 +53,59 @@ public partial class MainWindowViewModel : ViewModelBase
             else
             {
                 System.Diagnostics.Debug.WriteLine("Could not find this folder.");
-                return;
             }
         }
     }
 
-    [RelayCommand]
-    public void TestingVpk()
+    private Dictionary<string, List<string>> ParseVpkFiles()
     {
-        FileList.Clear();
-        
-        using var package = new Package();
-        package.Read(@"E:\SteamLibrary\steamapps\common\Left 4 Dead 2\left4dead2\addons\workshop\827842553.vpk");
-        
-        foreach (var entry in package.Entries["vtf"])
+        var vpkFiles = Directory.EnumerateFiles(GameDirectory, "*.vpk", SearchOption.AllDirectories);
+
+        var conflictMapper = new Dictionary<string, List<string>>();
+
+        foreach (var vpkFile in vpkFiles)
         {
-            System.Diagnostics.Debug.WriteLine($"Found: {entry.FileName}");
-            FileList.Add($"{entry.FileName}.{entry.TypeName}");
+            using var package = new Package();
+            package.Read(vpkFile);
+            string packageName = Path.GetFileName(vpkFile);
+
+            foreach (var fileType in package.Entries)
+            {
+                foreach (var entry in fileType.Value)
+                {
+                    string filePath = $"{entry.DirectoryName}/{entry.FileName}.{entry.TypeName}";
+                    if (!conflictMapper.ContainsKey(filePath))
+                    {
+                        conflictMapper[filePath] = new List<string>();
+                    }
+
+                    conflictMapper[filePath].Add(packageName);
+                }
+            }
         }
+        return conflictMapper;
     }
 
     [RelayCommand]
-    public async Task CheckForConflicts()
+    private void CheckForConflicts()
     {
-        await GetGameDirectory();
+        if (!Directory.Exists(GameDirectory))
+        {
+            return;
+        }
         
-        using var package = new Package();
+        ConflictList.Clear();
+
+        var conflictMapper = ParseVpkFiles();
+
+        foreach (var entry in conflictMapper)
+        {
+            if (entry.Value.Count > 1)
+            {
+                string conflictingMods = string.Join(", ", entry.Value);
+                ConflictList.Add($"{entry.Key} - {conflictingMods}");
+            }
+        }
     }
 }
     

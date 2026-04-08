@@ -1,0 +1,37 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:l4d2_mod_manager.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="l4d2_mod_manager.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/L4D2-Logo.ico"
+        Title="Left 4 Dead 2 Conflict Manager">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+    
+    <StackPanel Margin="20" Spacing="20">
+        <TextBlock Text="L4D2 Conflict Manager" HorizontalAlignment="Center" FontWeight="Bold"/>
+        
+        <Button Content="Set Game Directory"
+                Command="{Binding CheckForConflictsCommand}"
+                HorizontalAlignment="Center"/>        
+        
+        <TextBlock Text="{Binding GameDirectory}" HorizontalAlignment="Center"/>    
+        
+        <Separator/>     
+        
+        <Button Content="Scan VPK Files"
+                Command="{Binding TestingVpkCommand}"
+                HorizontalAlignment="Center"/>
+        
+        <TextBlock Text="Files Found:"/>
+        
+        <ListBox ItemsSource="{Binding FileList}"/>
+    </StackPanel>
+</Window>

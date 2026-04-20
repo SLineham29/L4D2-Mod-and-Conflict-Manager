@@ -12,4 +12,8 @@
     <Application.Styles>
         <FluentTheme />
     </Application.Styles>
+             
+    <Application.Resources>
+        <FontFamily x:Key="L4DFont">avares://l4d2-mod-manager/Assets/Fonts/Futurot.ttf#Future Rot</FontFamily>
+    </Application.Resources>
 </Application>

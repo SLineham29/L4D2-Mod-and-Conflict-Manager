@@ -2,24 +2,54 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SteamDatabase.ValvePak;
 using Avalonia.Platform.Storage;
 using l4d2_mod_manager.Models;
+using l4d2_mod_manager.Views;
 using ValveKeyValue;
 
 namespace l4d2_mod_manager.ViewModels;
 
 public partial class MainWindowViewModel : ViewModelBase
 {
+    private readonly ModListView _modListView = new();
+    private readonly ModConflictView _modConflictView = new();
+    
+    [ObservableProperty]
+    private UserControl _currentView;
+
+    [ObservableProperty] private bool _goToConflictView;
+
+    partial void OnGoToConflictViewChanged(bool value)
+    {
+        CurrentView = value ? _modConflictView : _modListView;
+    }
+    
     [ObservableProperty]
     private string _gameDirectory = "N/A";
 
-    [ObservableProperty] private ObservableCollection<ModFile> _modCollection = new();
+    [ObservableProperty]
+    private ObservableCollection<ModFile> _modCollection = new();
+
+    [ObservableProperty]
+    private ModFile? _currentMod;
+
+    partial void OnCurrentModChanged(ModFile? value)
+    {
+        if (value == null)
+        {
+            return;
+        }
+        value.ModImage = new Bitmap(value.ImageLink);
+    }
 
     [ObservableProperty]
     private ObservableCollection<string> _conflictList = new();
@@ -35,7 +65,21 @@ public partial class MainWindowViewModel : ViewModelBase
         else
         {
             GameDirectory = "N/A";
-        }        
+        }
+        
+        _currentView = _modListView;
+    }
+
+    [RelayCommand]
+    public void ShowModList()
+    {
+        CurrentView = _modListView;
+    }
+
+    [RelayCommand]
+    public void ShowConflictList()
+    {
+        CurrentView = _modConflictView;
     }
 
     [RelayCommand]
@@ -74,7 +118,7 @@ public partial class MainWindowViewModel : ViewModelBase
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            Console.WriteLine("Error in this mod, need to read manually.");
             convertedInfo = null;
         }
 
@@ -108,7 +152,10 @@ public partial class MainWindowViewModel : ViewModelBase
         }
         else
         {
-            mod.FileName = "Corrupt AddonInfo";
+            // If the addoninfo file is messed up in any way, we can still try and get the title through a regex search.
+            string txtInfo = System.Text.Encoding.UTF8.GetString(data).Trim();
+            var findTitle = Regex.Match(txtInfo, @"(?i)""?AddonTitle""?\s+""([^""]+)""");
+            mod.ModName = findTitle.Success ? findTitle.Groups[1].Value : "Corrupt AddonInfo";
         }
         return mod;
     }
@@ -138,15 +185,15 @@ public partial class MainWindowViewModel : ViewModelBase
                     FileName = Path.GetFileName(vpkFile)
                 };
             }
+            
+            // steam://openurl/ opens the link directly in Steam if it's installed.
+            currentMod.ModWorkshopLink = "steam://openurl/https://steamcommunity.com/sharedfiles/filedetails/?id=" +
+                                         Path.GetFileNameWithoutExtension(vpkFile);
+            
             string imageLocation = Path.GetDirectoryName(vpkFile) + @"\" + Path.GetFileNameWithoutExtension(vpkFile) + ".jpg";
-            if (Directory.Exists(imageLocation))
+            if (File.Exists(imageLocation))
             {
                 currentMod.ImageLink = imageLocation;
-            }
-            
-            if (currentMod.IsMap)
-            {
-                continue;
             }
 
             foreach (var fileType in package.Entries)
@@ -158,11 +205,14 @@ public partial class MainWindowViewModel : ViewModelBase
                         continue;
                     }
                     string filePath = $"{entry.DirectoryName}/{entry.FileName}.{entry.TypeName}";
-                    if (!conflictMapper.ContainsKey(filePath))
+                    if (!currentMod.IsMap)
                     {
-                        conflictMapper[filePath] = new List<string>();
+                        if (!conflictMapper.ContainsKey(filePath))
+                        {
+                            conflictMapper[filePath] = new List<string>();
+                        }
+                        conflictMapper[filePath].Add(currentMod.ModName);
                     }
-                    conflictMapper[filePath].Add(currentMod.ModName);
                     currentMod.FileList.Add(filePath);
                 }
             }

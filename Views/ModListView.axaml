@@ -1,0 +1,98 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             xmlns:vm="using:l4d2_mod_manager.ViewModels"
+             xmlns:models="using:l4d2_mod_manager.Models"
+             x:Class="l4d2_mod_manager.Views.ModListView"
+             x:DataType="vm:MainWindowViewModel">
+    
+    <UserControl.Styles>
+        <Style Selector="HyperlinkButton:pointerover /template/ ContentPresenter">
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+        <Style Selector="HyperlinkButton:pressed /template/ ContentPresenter">
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+        <Style Selector="HyperlinkButton:visited /template/ ContentPresenter">
+            <Setter Property="Foreground" Value="Black" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid ColumnDefinitions="*, 3*">
+        <Border Grid.Column="0" BorderBrush="Gray" BorderThickness="2" CornerRadius="4">
+            <ListBox ItemsSource="{Binding ModCollection}" 
+                     SelectedItem="{Binding CurrentMod}"
+                     VerticalAlignment="Stretch">
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="models:ModFile">
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="{Binding ModName}" FontWeight="Bold" TextWrapping="NoWrap"/>
+                            <TextBlock Text="{Binding ModAuthor}" FontSize="12" Foreground="Gray" TextWrapping="NoWrap"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Border>
+        
+        <TextBlock Grid.Column="1" Text="Scan your mods, then select a mod in the left column to view the details."
+                   IsVisible="{Binding CurrentMod, Converter={x:Static ObjectConverters.IsNull}}"
+                   FontStyle="Italic" FontSize="15" FontFamily="{StaticResource L4DFont}"
+                   VerticalAlignment="Center" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
+        
+        <Grid Grid.Column="1" RowDefinitions="Auto, 7*, 3*" Margin="20,10,20,0"
+              IsVisible="{Binding CurrentMod, Converter={x:Static ObjectConverters.IsNotNull}}">
+            
+            <ScrollViewer Grid.Row="0" MaxHeight="225">
+                <Grid RowDefinitions="Auto, Auto, Auto" RowSpacing="10" Margin="0,10,0,0">
+                    <StackPanel Grid.Row="0" VerticalAlignment="Top">
+                        <TextBlock Text="{Binding CurrentMod.ModName}" FontSize="25" FontFamily="{StaticResource L4DFont}"/>
+                        <TextBlock Text="{Binding CurrentMod.ModAuthor, StringFormat='Created By: {0}'}" Foreground="Gray"/>
+                        <Border IsVisible="{Binding CurrentMod.IsMap}"
+                                Background="DarkGreen" CornerRadius="3"
+                                HorizontalAlignment="Left" Padding="5,3" Margin="0,5,0,0">
+                            <TextBlock Text="Map / Campaign" Foreground="White" FontSize="10" FontWeight="Bold"/>
+                        </Border>
+                        <Border Background="black" CornerRadius="4" HorizontalAlignment="Left" 
+                                Padding="6,4" Margin="0,10,0,0">
+                            <TextBlock Text="{Binding CurrentMod.FileName, StringFormat='File Name: {0}'}"
+                                       FontSize="10" Foreground="Gray" FontFamily="Consolas"/>
+                        </Border>
+                    </StackPanel>
+
+                    <Separator Grid.Row="1"/>
+
+                    <StackPanel Grid.Row="2" Spacing="10">
+                        <TextBlock Text="Description" FontFamily="{StaticResource L4DFont}" FontSize="20"/>
+                        <TextBlock Text="{Binding CurrentMod.ModDescription}"
+                                   TextWrapping="Wrap" FontStyle="Italic"/>
+                        <HyperlinkButton Content="Go to Workshop Page"
+                                         NavigateUri="{Binding CurrentMod.ModWorkshopLink}"
+                                         Background="#89ff00" Foreground="Black"
+                                         FontFamily="{StaticResource L4DFont}" FontSize="12"/>
+                    </StackPanel>
+                </Grid>
+            </ScrollViewer>
+            
+            <Border Grid.Row="1" Background="Transparent" CornerRadius="10" Margin="0,10,0,0">
+                <Image Source="{Binding CurrentMod.ModImage}" Stretch="Uniform"
+                       HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
+            </Border>
+            
+            <Grid Grid.Row="2" RowDefinitions="Auto, *" Margin="0,10,0,0" RowSpacing="5">
+                <TextBlock Grid.Row="0" Text="Files Changed:" FontFamily="{StaticResource L4DFont}" FontSize="20"/>
+                <Border Grid.Row="1" Background="Gray" CornerRadius="4" BorderThickness="3">
+                    <ListBox ItemsSource="{Binding CurrentMod.FileList}" VerticalAlignment="Stretch">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" FontSize="14" Foreground="White"
+                                           Margin="5" FontFamily="Consolas"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

@@ -3,11 +3,13 @@
         xmlns:vm="using:l4d2_mod_manager.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:views="clr-namespace:l4d2_mod_manager.Views"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="l4d2_mod_manager.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/L4D2-Logo.ico"
-        Title="Left 4 Dead 2 Conflict Manager">
+        Title="Left 4 Dead 2 Mod/Conflict Manager"
+        Background="#013220">
 
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
@@ -15,22 +17,50 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
     
-    <StackPanel Margin="20" Spacing="20">
-        <TextBlock Text="L4D2 Conflict Manager" HorizontalAlignment="Center" FontWeight="Bold"/>
-    
-        <Button Content="Set Game Directory"
-                Command="{Binding SetGameDirectoryCommand}"
-                HorizontalAlignment="Center"/>
-    
-        <TextBlock Text="{Binding GameDirectory}" HorizontalAlignment="Center"/>
-    
-        <Separator/>
+    <Grid RowDefinitions="Auto, Auto, *">
+        <Border Grid.Row="0" Background="#1a1a1a" Padding="15,10" BorderBrush="#333" BorderThickness="0,0,0,1">
+            <Grid ColumnDefinitions="Auto, *, Auto">
+                
+                <TextBlock Grid.Column="0" Text="L4D2 Mod Manager" FontSize="17" FontWeight="Bold" 
+                           VerticalAlignment="Center" Foreground="White"
+                           FontFamily="{StaticResource L4DFont}"/>
+
+
+                <Border Grid.Column="1" HorizontalAlignment="Center" Background="#252525" CornerRadius="10" Padding="10, 5">
+                    <StackPanel Orientation="Horizontal" Spacing="15">
+                        <RadioButton Content="Mod List" 
+                                     IsChecked="{Binding !GoToConflictView}"
+                                     Theme="{StaticResource ToggleButtonStyle}"/>
+                        <RadioButton Content="Conflicts" 
+                                     IsChecked="{Binding GoToConflictView}"
+                                     Theme="{StaticResource ToggleButtonStyle}"/>
+                    </StackPanel>
+                </Border>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10">
+                    <Button Command="{Binding SetGameDirectoryCommand}" 
+                            Padding="10,5" Background="#252525" Foreground="White"
+                            Content="Set Game Directory" FontSize="11"/>
+
+                    <Button Command="{Binding CheckForConflictsCommand}" 
+                            Background="#89ff00" Foreground="Black" FontWeight="ExtraBold"
+                            Padding="15,5" Content="SCAN MODS" FontSize="15">
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Border Grid.Row="1" Background="Black" Padding="2">
+            <TextBlock Text="{Binding GameDirectory}" 
+                       FontSize="10" Foreground="#666"
+                       HorizontalAlignment="Center"/>
+        </Border>
         
-        <Button Content="Check for Conflicts"
-                Command="{Binding CheckForConflictsCommand}"
-                HorizontalAlignment="Center"/>
-    
-        <TextBlock Text="Conflicts Found:"/>
-        <ListBox ItemsSource="{Binding ConflictList}"/>
-    </StackPanel>
+        <TransitioningContentControl Grid.Row="2" Content="{Binding CurrentView}" Margin="10">
+            <TransitioningContentControl.PageTransition>
+                <CrossFade Duration="0.5"></CrossFade>
+            </TransitioningContentControl.PageTransition>
+        </TransitioningContentControl>
+        
+    </Grid>
 </Window>

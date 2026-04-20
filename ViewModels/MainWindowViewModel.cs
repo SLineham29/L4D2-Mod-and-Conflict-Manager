@@ -223,11 +223,11 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void CheckForConflicts()
+    private async Task CheckForConflicts()
     {
         if (!Directory.Exists(GameDirectory))
         {
-            return;
+            await SetGameDirectory();
         }
         
         ConflictList.Clear();

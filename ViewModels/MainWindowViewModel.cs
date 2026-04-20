@@ -97,7 +97,8 @@ public partial class MainWindowViewModel : ViewModelBase
             if (directoryFolders.Count != 0)
             {
                 GameDirectory = directoryFolders[0].Path.LocalPath;
-                File.WriteAllText("GameDirectory.txt", GameDirectory);
+                string txtFileLocation = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GameDirectory.txt");
+                File.WriteAllText(txtFileLocation, GameDirectory);
             }
             else
             {

@@ -1,11 +1,63 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              xmlns:vm="using:l4d2_mod_manager.ViewModels"
+             xmlns:models="using:l4d2_mod_manager.Models"
+             xmlns:asyncImageLoader="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
              x:Class="l4d2_mod_manager.Views.ModConflictView"
-             x:DataType="vm:MainWindowViewModel">
+             x:DataType="vm:MainWindowViewModel"
+             x:Name="UserControl">
     
-    <StackPanel>
-        <TextBlock Text="Conflicts Found:"/>
-        <ListBox ItemsSource="{Binding ConflictList}"/>        
-    </StackPanel>
+    <Grid RowDefinitions="Auto, *" RowSpacing="10">
+        <TextBlock Grid.Row="0" FontFamily="{StaticResource L4DFont}" FontSize="25"
+                   Text="{Binding ConflictList.Count, StringFormat='Conflicts Found: {0}'}"/>
+        
+        <Border Grid.Row="1" BorderBrush="Gray" BorderThickness="2" CornerRadius="4">
+            <TreeView ItemsSource="{Binding ConflictList}" Background="#333">
+                <TreeView.DataTemplates>
+                    <TreeDataTemplate DataType="models:FileConflict" ItemsSource="{Binding ConflictingMods}">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <TextBlock Text="{Binding FileName}" FontWeight="Bold" FontFamily="Consolas"/>
+                            <TextBlock Text="{Binding ConflictingMods.Count, StringFormat='({0} Conflicting Mods)'}" 
+                                       Foreground="Gray" FontSize="12"/>
+                        </StackPanel>
+                    </TreeDataTemplate>
+
+                    <DataTemplate DataType="models:ModFile">
+                        <Grid ColumnDefinitions="*, 80, Auto, Auto" Margin="10,5" ColumnSpacing="15">
+                            <StackPanel Grid.Column="0" Spacing="5" VerticalAlignment="Center" Margin="0,0,10,0">
+                                <TextBlock Text="{Binding ModName}" VerticalAlignment="Center" FontWeight="Bold"/>         
+                                <TextBlock Text="{Binding ModDescription}" MaxLines="2" FontSize="12"
+                                           TextWrapping="Wrap" TextTrimming="CharacterEllipsis"/>
+                            </StackPanel>
+                            
+                            <Image Grid.Column="1" asyncImageLoader:ImageLoader.Source="{Binding ImageLink}"
+                                   Stretch="UniformToFill" MaxHeight="50">
+                                <ToolTip.Tip>
+                                    <Image asyncImageLoader:ImageLoader.Source="{Binding ImageLink}"
+                                           Stretch="Uniform"/>
+                                </ToolTip.Tip>
+                            </Image>
+                            
+                            <Button Grid.Column="2" Command="{Binding #UserControl.((vm:MainWindowViewModel)DataContext).ViewModDetailsCommand}"
+                                    CommandParameter="{Binding}"
+                                    Background="#89ff00" Foreground="Black"
+                                    Padding="8,5" VerticalAlignment="Center" CornerRadius="3"
+                                    Content="View to Mod Details"
+                                />
+                                
+                            <HyperlinkButton Grid.Column="3" 
+                                    Content="Unsubscribe"
+                                    NavigateUri="{Binding ModWorkshopLink}"
+                                    Background="DarkRed" Foreground="White"
+                                    Padding="8, 5" VerticalAlignment="Center"
+                                    CornerRadius="3"/>
+                        </Grid>
+                    </DataTemplate>
+                </TreeView.DataTemplates>
+            </TreeView>
+        </Border>
+    </Grid>
 </UserControl>

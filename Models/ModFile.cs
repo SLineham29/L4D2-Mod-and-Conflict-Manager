@@ -12,6 +12,5 @@ public class ModFile
     public bool IsMap  { get; set; }
     public List<string> FileList { get; set; } = [];
     public string ImageLink { get; set; } = string.Empty;
-    public Bitmap? ModImage { get; set; }
     public string ModWorkshopLink { get; set; } = string.Empty;
 }

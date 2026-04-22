@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Avalonia;
@@ -48,11 +49,10 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             return;
         }
-        value.ModImage = new Bitmap(value.ImageLink);
     }
 
     [ObservableProperty]
-    private ObservableCollection<string> _conflictList = new();
+    private ObservableCollection<FileConflict> _conflictList = new();
 
     public MainWindowViewModel()
     {
@@ -80,6 +80,13 @@ public partial class MainWindowViewModel : ViewModelBase
     public void ShowConflictList()
     {
         CurrentView = _modConflictView;
+    }
+
+    [RelayCommand]
+    public void ViewModDetails(ModFile chosenMod)
+    {
+        CurrentMod =  chosenMod;
+        CurrentView = _modListView;
     }
 
     [RelayCommand]
@@ -161,15 +168,18 @@ public partial class MainWindowViewModel : ViewModelBase
         return mod;
     }
 
-    private Dictionary<string, List<string>> ParseVpkFiles()
+    private void ParseVpkFiles()
     {
         var vpkFiles = Directory.EnumerateFiles(GameDirectory, "*.vpk", SearchOption.AllDirectories);
-        var conflictMapper = new Dictionary<string, List<string>>();
-
+        if (vpkFiles.Count() == 0)
+        {
+            Console.WriteLine("No VPK files found in this directory.");
+            return;
+        }
         foreach (var vpkFile in vpkFiles)
         {
             Console.WriteLine($"Reading {Path.GetFileName(vpkFile)}");
-            ModFile currentMod;            
+            ModFile currentMod;
             using var package = new Package();
             package.Read(vpkFile);
             var infoFile = package.FindEntry("addoninfo.txt");
@@ -206,20 +216,36 @@ public partial class MainWindowViewModel : ViewModelBase
                         continue;
                     }
                     string filePath = $"{entry.DirectoryName}/{entry.FileName}.{entry.TypeName}";
-                    if (!currentMod.IsMap)
-                    {
-                        if (!conflictMapper.ContainsKey(filePath))
-                        {
-                            conflictMapper[filePath] = new List<string>();
-                        }
-                        conflictMapper[filePath].Add(currentMod.ModName);
-                    }
                     currentMod.FileList.Add(filePath);
                 }
             }
             ModCollection.Add(currentMod);
         }
-        return conflictMapper;
+    }
+
+    private List<FileConflict> CreateConflictMapper(List<ModFile> modCollection)
+    {
+        var tempConflictCollection = new Dictionary<string, FileConflict>(StringComparer.OrdinalIgnoreCase);
+        
+        foreach(var mod in modCollection)
+        {
+            if (!mod.IsMap)
+            {
+                foreach (var file in mod.FileList)
+                {
+                    if (!tempConflictCollection.ContainsKey(file))
+                    {
+                        tempConflictCollection[file] = new FileConflict
+                        {
+                            FileName = file,
+                            ConflictingMods = new List<ModFile>()
+                        };
+                    }
+                    tempConflictCollection[file].ConflictingMods.Add(mod);
+                }
+            }
+        }
+        return tempConflictCollection.Values.Where(x => x.ConflictingMods.Count > 1).ToList();
     }
 
     [RelayCommand]
@@ -231,17 +257,11 @@ public partial class MainWindowViewModel : ViewModelBase
         }
         
         ConflictList.Clear();
-
-        var conflictMapper = ParseVpkFiles();
-
-        foreach (var entry in conflictMapper)
-        {
-            if (entry.Value.Count > 1)
-            {
-                string conflictingMods = string.Join(", ", entry.Value);
-                ConflictList.Add($"{entry.Key} - {conflictingMods}");
-            }
-        }
+        ModCollection.Clear();
+        
+        ParseVpkFiles();
+        var conflictMapper = CreateConflictMapper(ModCollection.ToList());
+        ConflictList = new ObservableCollection<FileConflict>(conflictMapper);
     }
 }
     

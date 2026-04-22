@@ -30,17 +30,17 @@
                     <StackPanel Orientation="Horizontal" Spacing="15">
                         <RadioButton Content="Mod List" 
                                      IsChecked="{Binding !GoToConflictView}"
-                                     Theme="{StaticResource ToggleButtonStyle}"/>
+                                     Theme="{StaticResource ToggleButtonStyle}" Foreground="White"/>
                         <RadioButton Content="Conflicts" 
                                      IsChecked="{Binding GoToConflictView}"
-                                     Theme="{StaticResource ToggleButtonStyle}"/>
+                                     Theme="{StaticResource ToggleButtonStyle}" Foreground="White"/>
                     </StackPanel>
                 </Border>
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10">
                     <Button Command="{Binding SetGameDirectoryCommand}" 
                             Padding="10,5" Background="#252525" Foreground="White"
-                            Content="Set Game Directory" FontSize="11"/>
+                            Content="Set Addons Directory" FontSize="11"/>
 
                     <Button Command="{Binding CheckForConflictsCommand}" 
                             Background="#89ff00" Foreground="Black" FontWeight="ExtraBold"

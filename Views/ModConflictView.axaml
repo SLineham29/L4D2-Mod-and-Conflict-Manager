@@ -45,7 +45,7 @@
                                     CommandParameter="{Binding}"
                                     Background="#89ff00" Foreground="Black"
                                     Padding="8,5" VerticalAlignment="Center" CornerRadius="3"
-                                    Content="View to Mod Details"
+                                    Content="Go to Mod Details"
                                 />
                                 
                             <HyperlinkButton Grid.Column="3" 

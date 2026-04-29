@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SteamDatabase.ValvePak;
@@ -16,6 +15,8 @@ using Avalonia.Platform.Storage;
 using l4d2_mod_manager.Models;
 using l4d2_mod_manager.Views;
 using ValveKeyValue;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Enums;
 
 namespace l4d2_mod_manager.ViewModels;
 
@@ -58,32 +59,25 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         string filepath = "GameDirectory.txt";
         
-        if(File.Exists(filepath))
-        {
-                GameDirectory = File.ReadAllText(filepath);
-        }
-        else
-        {
-            GameDirectory = "N/A";
-        }
+        GameDirectory = File.Exists(filepath) ? File.ReadAllText(filepath) : "N/A";
         
         _currentView = _modListView;
     }
 
     [RelayCommand]
-    public void ShowModList()
+    private void ShowModList()
     {
         CurrentView = _modListView;
     }
 
     [RelayCommand]
-    public void ShowConflictList()
+    private void ShowConflictList()
     {
         CurrentView = _modConflictView;
     }
 
     [RelayCommand]
-    public void ViewModDetails(ModFile chosenMod)
+    private void ViewModDetails(ModFile chosenMod)
     {
         CurrentMod =  chosenMod;
         CurrentView = _modListView;
@@ -105,6 +99,14 @@ public partial class MainWindowViewModel : ViewModelBase
             if (directoryFolders.Count != 0)
             {
                 GameDirectory = directoryFolders[0].Path.LocalPath;
+                if (!GameDirectory.Contains("left4dead2/addons"))
+                {
+                    var popup = MessageBoxManager.GetMessageBoxStandard("Wrong Directory",
+                        "Selected folder is not the Left 4 Dead 2 addons folder (located in Left 4 Dead 2/left4dead2/addons), please choose another directory.",
+                        ButtonEnum.Ok, Icon.Warning);
+                    var popupResult = await popup.ShowAsync();
+                    return;
+                }
                 string txtFileLocation = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GameDirectory.txt");
                 File.WriteAllText(txtFileLocation, GameDirectory);
             }

@@ -14,16 +14,17 @@
 
     <ItemGroup>
         <PackageReference Include="AsyncImageLoader.Avalonia" Version="3.8.0" />
-        <PackageReference Include="Avalonia" Version="12.0.0"/>
-        <PackageReference Include="Avalonia.Desktop" Version="12.0.0"/>
-        <PackageReference Include="Avalonia.Themes.Fluent" Version="12.0.0"/>
-        <PackageReference Include="Avalonia.Fonts.Inter" Version="12.0.0"/>
-        <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.0">
+        <PackageReference Include="Avalonia" Version="12.0.2" />
+        <PackageReference Include="Avalonia.Desktop" Version="12.0.2" />
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="12.0.2" />
+        <PackageReference Include="Avalonia.Fonts.Inter" Version="12.0.2" />
+        <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.1">
             <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
             <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.1"/>
-        <PackageReference Include="ValveKeyValue" Version="0.60.0.494" />
+        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+        <PackageReference Include="MessageBox.Avalonia" Version="12.0.0" />
+        <PackageReference Include="ValveKeyValue" Version="0.70.0.499" />
         <PackageReference Include="ValvePak" Version="4.0.0.142" />
     </ItemGroup>
 </Project>

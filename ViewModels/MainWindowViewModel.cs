@@ -98,15 +98,15 @@ public partial class MainWindowViewModel : ViewModelBase
 
             if (directoryFolders.Count != 0)
             {
-                GameDirectory = directoryFolders[0].Path.LocalPath;
-                if (!GameDirectory.Contains("left4dead2/addons"))
+                if (!directoryFolders[0].Path.LocalPath.Contains(@"left4dead2\addons"))                
                 {
                     var popup = MessageBoxManager.GetMessageBoxStandard("Wrong Directory",
                         "Selected folder is not the Left 4 Dead 2 addons folder (located in Left 4 Dead 2/left4dead2/addons), please choose another directory.",
                         ButtonEnum.Ok, Icon.Warning);
                     var popupResult = await popup.ShowAsync();
                     return;
-                }
+                }                
+                GameDirectory = directoryFolders[0].Path.LocalPath;
                 string txtFileLocation = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "GameDirectory.txt");
                 File.WriteAllText(txtFileLocation, GameDirectory);
             }
@@ -146,7 +146,7 @@ public partial class MainWindowViewModel : ViewModelBase
                         mod.ModName = child.Value.ToString();
                         break;
                     case "addondescription":
-                        mod.ModDescription = child.Value.ToString();
+                        mod.ModDescription = child.Value.ToString().Trim() != "" ? child.Value.ToString() : "No description given.";
                         break;
                     case "addonauthor":
                         mod.ModAuthor = child.Value.ToString();
@@ -167,6 +167,7 @@ public partial class MainWindowViewModel : ViewModelBase
             string txtInfo = System.Text.Encoding.UTF8.GetString(data).Trim();
             var findTitle = Regex.Match(txtInfo, @"(?i)""?AddonTitle""?\s+""([^""]+)""");
             mod.ModName = findTitle.Success ? findTitle.Groups[1].Value : "Corrupt AddonInfo";
+            mod.ModDescription = "No description given.";
         }
         return mod;
     }
@@ -196,6 +197,7 @@ public partial class MainWindowViewModel : ViewModelBase
                 currentMod = new ModFile
                 {
                     ModName = "Invalid Mod Info",
+                    ModDescription = "No description given.",   
                     FileName = Path.GetFileName(vpkFile)
                 };
             }
@@ -257,6 +259,7 @@ public partial class MainWindowViewModel : ViewModelBase
         if (!Directory.Exists(GameDirectory))
         {
             await SetGameDirectory();
+            return;
         }
         
         ConflictList.Clear();

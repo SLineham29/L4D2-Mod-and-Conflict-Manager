@@ -87,6 +87,7 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         CurrentMod =  chosenMod;
         CurrentView = _modListView;
+        GoToConflictView = false;
     }
 
     [RelayCommand]

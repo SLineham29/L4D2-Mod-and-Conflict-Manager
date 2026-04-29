@@ -34,7 +34,7 @@
                             </StackPanel>
                             
                             <Image Grid.Column="1" asyncImageLoader:ImageLoader.Source="{Binding ImageLink}"
-                                   Stretch="UniformToFill" MaxHeight="50">
+                                   Stretch="Uniform" MaxHeight="50">
                                 <ToolTip.Tip>
                                     <Image asyncImageLoader:ImageLoader.Source="{Binding ImageLink}"
                                            Stretch="Uniform"/>
